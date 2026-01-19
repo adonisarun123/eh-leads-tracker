@@ -13,9 +13,16 @@ export interface AnalyticsData {
     conversionRate: number;
 }
 
-export function useAnalytics() {
+export interface AnalyticsFilters {
+    dateRange?: { from?: Date; to?: Date };
+    city?: string;
+    service?: string;
+    source?: string;
+}
+
+export function useAnalytics(filters: AnalyticsFilters = {}) {
     return useQuery({
-        queryKey: ['analytics'],
+        queryKey: ['analytics', filters],
         queryFn: async (): Promise<AnalyticsData> => {
             const supabase = createClient();
 
@@ -42,7 +49,34 @@ export function useAnalytics() {
             const leadsData = (leadsResponse.data || []).map(l => normalizeLead(l, 'leads'));
             const hireData = (hireResponse.data || []).map(l => normalizeLead(l, 'hire_helper_leads'));
 
-            const allLeads = [...leadsData, ...hireData];
+            let allLeads = [...leadsData, ...hireData];
+
+            // Apply Filters Client-Side
+            if (filters.dateRange) {
+                if (filters.dateRange.from) {
+                    const from = filters.dateRange.from.getTime();
+                    allLeads = allLeads.filter(l => new Date(l.created_at).getTime() >= from);
+                }
+                if (filters.dateRange.to) {
+                    const toTime = filters.dateRange.to.getTime();
+                    // Add 1 day to include the end date fully or handle as End of Day
+                    // Assuming 'to' is set to end of day or we check date part
+                    // Simply <= check here
+                    allLeads = allLeads.filter(l => new Date(l.created_at).getTime() <= toTime);
+                }
+            }
+
+            if (filters.city && filters.city !== 'all') {
+                allLeads = allLeads.filter(l => l.city === filters.city);
+            }
+
+            if (filters.service && filters.service !== 'all') {
+                allLeads = allLeads.filter(l => l.service_required === filters.service);
+            }
+
+            if (filters.source && filters.source !== 'all') {
+                allLeads = allLeads.filter(l => l.source === filters.source);
+            }
 
             if (allLeads.length === 0) return emptyAnalytics();
 

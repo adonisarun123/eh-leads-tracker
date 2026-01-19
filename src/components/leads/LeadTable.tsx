@@ -14,6 +14,19 @@ import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow, parseISO } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { calculateLeadScore, getScoreColor } from '@/lib/scoring';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Button } from '@/components/ui/button';
+import { ChevronDown, Loader2 } from 'lucide-react';
+import { useUpdateLead } from '@/hooks/useLeads';
+import { toast } from 'sonner';
+import { useState } from 'react';
+
+const AGENTS = ['Laxmi', 'Ashma', 'Anjum', 'Nisha', 'Shubhangi', 'Riya'];
 
 interface LeadTableProps {
     leads: Lead[];
@@ -70,7 +83,9 @@ export function LeadTable({ leads }: LeadTableProps) {
                             <TableCell className="hidden md:table-cell">
                                 <PriorityBadge priority={lead.priority || 'Medium'} />
                             </TableCell>
-                            <TableCell className="hidden lg:table-cell">{lead.assigned_to || 'Unassigned'}</TableCell>
+                            <TableCell className="hidden lg:table-cell">
+                                <AssignmentCell lead={lead} />
+                            </TableCell>
                             <TableCell className="hidden xl:table-cell text-sm">{lead.budget || '-'}</TableCell>
                             <TableCell className="hidden xl:table-cell text-sm">
                                 {lead.startDate ? formatDistanceToNow(parseISO(lead.startDate), { addSuffix: true }) : '-'}
@@ -121,4 +136,56 @@ function PriorityBadge({ priority }: { priority: string }) {
         'Low': 'text-slate-600 border-slate-200 bg-slate-50',
     };
     return <Badge variant="outline" className={cn(colorMap[priority])}>{priority}</Badge>;
+}
+
+function AssignmentCell({ lead }: { lead: Lead }) {
+    const { mutate: updateLead, isPending } = useUpdateLead();
+
+    const handleAssign = (agent: string) => {
+        updateLead(
+            {
+                id: lead.id,
+                updates: { assigned_to: agent },
+                source_table: lead.source_table
+            },
+            {
+                onSuccess: () => toast.success(`Assigned to ${agent}`),
+                onError: () => toast.error('Failed to assign agent'),
+            }
+        );
+    };
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 -ml-3 data-[state=open]:bg-accent">
+                    {lead.assigned_to ? (
+                        <span className="font-medium text-foreground">{lead.assigned_to}</span>
+                    ) : (
+                        <span className="text-muted-foreground italic">Unassigned</span>
+                    )}
+                    <ChevronDown className="ml-2 h-3 w-3 opacity-50" />
+                    {isPending && <Loader2 className="ml-2 h-3 w-3 animate-spin" />}
+                </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+                {AGENTS.map((agent) => (
+                    <DropdownMenuItem key={agent} onClick={() => handleAssign(agent)}>
+                        {agent}
+                    </DropdownMenuItem>
+                ))}
+                {lead.assigned_to && (
+                    <>
+                        <div className="h-px bg-muted my-1" />
+                        <DropdownMenuItem
+                            onClick={() => handleAssign(null as any)}
+                            className="text-red-500 focus:text-red-500"
+                        >
+                            Unassign
+                        </DropdownMenuItem>
+                    </>
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
 }

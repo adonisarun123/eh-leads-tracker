@@ -38,26 +38,26 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
 
     return (
         <div className="flex flex-col gap-4 mb-6">
-            <div className="flex flex-col md:flex-row gap-4">
-                <div className="flex-1 flex gap-2">
+            <div className="flex flex-col xl:flex-row gap-4">
+                <div className="flex w-full xl:w-auto gap-2">
                     <Input
                         placeholder="Search leads..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                        className="max-w-sm"
+                        className="w-full md:w-[300px]"
                     />
                     <Button variant="outline" size="icon" onClick={handleSearch}>
                         <Search className="h-4 w-4" />
                     </Button>
                 </div>
-                <div className="flex gap-2 overflow-x-auto pb-2">
+                <div className="flex flex-1 flex-wrap items-center gap-2">
                     <Select
                         value={filters.city?.[0] || 'all'}
                         onValueChange={(val) => onFilterChange({ ...filters, city: val === 'all' ? undefined : [val] })}
                     >
                         <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="City" />
+                            <SelectValue placeholder="All Cities" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Cities</SelectItem>
@@ -73,7 +73,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         onValueChange={(val) => onFilterChange({ ...filters, source: val === 'all' ? undefined : [val] })}
                     >
                         <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Source" />
+                            <SelectValue placeholder="All Sources" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sources</SelectItem>
@@ -88,7 +88,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         onValueChange={(val) => onFilterChange({ ...filters, service_required: val === 'all' ? undefined : [val] })}
                     >
                         <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Service" />
+                            <SelectValue placeholder="All Services" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Services</SelectItem>
@@ -103,7 +103,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         onValueChange={(val) => onFilterChange({ ...filters, priority: val === 'all' ? undefined : [val as LeadPriority] })}
                     >
                         <SelectTrigger className="w-[140px]">
-                            <SelectValue placeholder="Priority" />
+                            <SelectValue placeholder="All Priorities" />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Priorities</SelectItem>
@@ -120,7 +120,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         Attention Needed
                     </Button>
 
-                    <Button variant="ghost" onClick={clearFilters} className="px-2 lg:px-3">
+                    <Button variant="ghost" onClick={clearFilters} className="px-2 lg:px-3 ml-auto">
                         Reset
                         <X className="ml-2 h-4 w-4" />
                     </Button>

@@ -1,20 +1,15 @@
 'use client';
 
-import { useAnalytics } from '@/hooks/useAnalytics';
+import { useAnalytics, AnalyticsFilters } from '@/hooks/useAnalytics';
 import { AnalyticsCharts } from '@/components/analytics/AnalyticsCharts';
 import { Insights } from '@/components/analytics/Insights';
+import { AnalyticsToolbar } from '@/components/analytics/AnalyticsToolbar';
 import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
 
 export default function AnalyticsPage() {
-    const { data, isLoading, error } = useAnalytics();
-
-    if (isLoading) {
-        return (
-            <div className="flex h-[50vh] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-        );
-    }
+    const [filters, setFilters] = useState<AnalyticsFilters>({});
+    const { data, isLoading, error } = useAnalytics(filters);
 
     if (error) {
         return (
@@ -24,17 +19,27 @@ export default function AnalyticsPage() {
         );
     }
 
-    if (!data) return null;
-
     return (
         <div className="container py-6 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-                <p className="text-muted-foreground">Insights and performance metrics for all historical data.</p>
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
+                    <p className="text-muted-foreground">Insights and performance metrics.</p>
+                </div>
             </div>
 
-            <Insights insights={data.insights} />
-            <AnalyticsCharts data={data} />
+            <AnalyticsToolbar filters={filters} onFilterChange={setFilters} />
+
+            {isLoading ? (
+                <div className="flex h-[50vh] items-center justify-center">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                </div>
+            ) : data ? (
+                <>
+                    <Insights insights={data.insights} />
+                    <AnalyticsCharts data={data} />
+                </>
+            ) : null}
         </div>
     );
 }
