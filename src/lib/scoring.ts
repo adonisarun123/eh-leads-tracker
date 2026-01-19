@@ -25,7 +25,7 @@ export function calculateLeadScore(lead: Lead): number {
     }
 
     // Service Type (High demand services)
-    if (['Nanny', 'Elder care'].includes(lead.service_required)) {
+    if (lead.service_required && ['Nanny', 'Elder care'].includes(lead.service_required)) {
         score += 3;
     }
 

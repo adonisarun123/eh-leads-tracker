@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLeads, useLeadsSubscription } from '@/hooks/useLeads';
+import { useLeadStats } from '@/hooks/useLeadStats';
 import { KPIStrip } from '@/components/leads/KPIStrip';
 import { LeadFilters } from '@/components/leads/LeadFilters';
 import { LeadTable } from '@/components/leads/LeadTable';
@@ -25,14 +26,8 @@ export default function LeadsPage() {
 
     const { data, isLoading, isError, error } = useLeads(activeFilters, page);
 
-    // Mock stats for now - in production this should come from a separate hook
-    const stats = {
-        totalLeads: data?.count || 0,
-        newLeads: 12, // Placeholder
-        unassigned: 5, // Placeholder
-        overdue: 3, // Placeholder
-        conversionRate: 24, // Placeholder
-    };
+    // Calculate real stats from actual lead data
+    const stats = useLeadStats(data?.data, data?.count || 0);
 
     const handleTabChange = (val: string) => {
         setActiveTab(val);

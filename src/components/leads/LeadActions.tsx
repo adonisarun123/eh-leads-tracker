@@ -66,10 +66,10 @@ export function LeadActions({ lead }: LeadActionsProps) {
                     Copy Phone
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => console.log('View', lead.id)}>
+                <DropdownMenuItem disabled>
                     <Eye className="mr-2 h-4 w-4" /> View Details
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log('Edit', lead.id)}>
+                <DropdownMenuItem disabled>
                     <Pencil className="mr-2 h-4 w-4" /> Edit Lead
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -77,7 +77,7 @@ export function LeadActions({ lead }: LeadActionsProps) {
                 <DropdownMenuItem onClick={handleMarkContacted}>
                     <Phone className="mr-2 h-4 w-4" /> Mark Contacted
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => console.log('Schedule', lead.id)}>
+                <DropdownMenuItem disabled>
                     <CalendarClock className="mr-2 h-4 w-4" /> Schedule Follow-up
                 </DropdownMenuItem>
 
