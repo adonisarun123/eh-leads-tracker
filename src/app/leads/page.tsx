@@ -35,7 +35,7 @@ export default function LeadsPage() {
     };
 
     return (
-        <div className="container py-6 space-y-6">
+        <div className="container mx-auto px-4 md:px-6 py-6 space-y-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight">Leads Dashboard</h1>

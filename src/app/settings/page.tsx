@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function SettingsPage() {
     return (
-        <div className="container py-6 space-y-6">
+        <div className="container mx-auto px-4 md:px-6 py-6 space-y-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
                 <p className="text-muted-foreground">Manage application configurations.</p>
