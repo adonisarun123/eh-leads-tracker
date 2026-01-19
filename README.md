@@ -1,36 +1,62 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Leads Dashboard Web App
 
-## Getting Started
+A production-ready Leads Dashboard built with Next.js, Supabase, Tailwind CSS, and shadcn/ui.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+-   **Dashboard**: KPI View, Segmented Tables (Tabs), Real-time updates.
+-   **Notifications**: Browser push notifications for new leads.
+-   **Lead Management**: Filters, Search, Row Actions (Edit, Status Change).
+-   **Analytics**: Visual charts for Volume, Source, City, and Insights.
+-   **Scoring**: Automatic lead scoring and "Attention Needed" queue.
+-   **Settings**: Configuration view for app constants.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Tech Stack
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+-   **Frontend**: Next.js 14+ (App Router), TypeScript
+-   **Styling**: Tailwind CSS, shadcn/ui, Lucide Icons
+-   **State**: React Query (TanStack Query)
+-   **Charts**: Recharts
+-   **Backend**: Supabase (Database & Realtime)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
 
-## Learn More
+1.  **Clone the repository**:
+    ```bash
+    git clone <repo_url>
+    cd leads-dashboard
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3.  **Configure Environment Variables**:
+    Copy `.env.local` example (or create one) with your Supabase credentials:
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+    ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+4.  **Database Setup**:
+    Run the SQL snippets provided in `supabase_snippets.sql` in your Supabase SQL Editor to create necessary indices and the `settings` table.
 
-## Deploy on Vercel
+5.  **Run Development Server**:
+    ```bash
+    npm run dev
+    ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+-   `src/app`: Page routes (Leads, Analytics, Settings)
+-   `src/components`: Reusable UI components
+    -   `leads`: Dashboard specific components (Table, Filters)
+    -   `analytics`: Charts and Insights
+-   `src/hooks`: Data fetching hooks (`useLeads`, `useAnalytics`)
+-   `src/lib`: Utilities and Supabase client
+
+## Bonus Features Implemented
+
+-   **Lead Scoring**: Calculated based on source, priority, and completeness.
+-   **Attention Needed Queue**: Filter for overdue or high-priority unassigned leads.
