@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -18,15 +19,18 @@ import { MoreHorizontal, Eye, Pencil, Phone, CalendarClock, UserPlus } from 'luc
 import { Lead, LeadStatus } from '@/types';
 import { useUpdateLead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
+import { EditLeadDialog } from './EditLeadDialog';
 
 interface LeadActionsProps {
     lead: Lead;
 }
 
 const STATUSES: LeadStatus[] = ['New', 'Contacted', 'Qualified', 'Trial Scheduled', 'Converted', 'Lost'];
+const AGENTS = ['Laxmi', 'Ashma', 'Anjum', 'Nisha', 'Shubhangi', 'Riya'];
 
 export function LeadActions({ lead }: LeadActionsProps) {
     const { mutate: updateLead } = useUpdateLead();
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     const handleStatusChange = (status: string) => {
         updateLead(
@@ -52,50 +56,85 @@ export function LeadActions({ lead }: LeadActionsProps) {
         );
     };
 
+    const handleAssign = (agent: string) => {
+        updateLead(
+            {
+                id: lead.id,
+                updates: { assigned_to: agent },
+                source_table: lead.source_table
+            },
+            {
+                onSuccess: () => toast.success(`Assigned to ${agent}`),
+                onError: () => toast.error('Failed to assign agent'),
+            }
+        );
+    };
+
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Open menu</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                <DropdownMenuItem onClick={() => navigator.clipboard.writeText(lead.phone)}>
-                    Copy Phone
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
-                    <Eye className="mr-2 h-4 w-4" /> View Details
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                    <Pencil className="mr-2 h-4 w-4" /> Edit Lead
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+        <>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="h-8 w-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                    <DropdownMenuItem onClick={() => navigator.clipboard.writeText(lead.phone)}>
+                        Copy Phone
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem disabled>
+                        <Eye className="mr-2 h-4 w-4" /> View Details
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                        <Pencil className="mr-2 h-4 w-4" /> Edit Lead
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
 
-                <DropdownMenuItem onClick={handleMarkContacted}>
-                    <Phone className="mr-2 h-4 w-4" /> Mark Contacted
-                </DropdownMenuItem>
-                <DropdownMenuItem disabled>
-                    <CalendarClock className="mr-2 h-4 w-4" /> Schedule Follow-up
-                </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleMarkContacted}>
+                        <Phone className="mr-2 h-4 w-4" /> Mark Contacted
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
+                        <CalendarClock className="mr-2 h-4 w-4" /> Schedule Follow-up
+                    </DropdownMenuItem>
 
-                <DropdownMenuSeparator />
+                    <DropdownMenuSeparator />
 
-                <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>
-                    <DropdownMenuSubContent>
-                        <DropdownMenuRadioGroup value={lead.status} onValueChange={handleStatusChange}>
-                            {STATUSES.map((status) => (
-                                <DropdownMenuRadioItem key={status} value={status}>
-                                    {status}
-                                </DropdownMenuRadioItem>
-                            ))}
-                        </DropdownMenuRadioGroup>
-                    </DropdownMenuSubContent>
-                </DropdownMenuSub>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Change Status</DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup value={lead.status} onValueChange={handleStatusChange}>
+                                {STATUSES.map((status) => (
+                                    <DropdownMenuRadioItem key={status} value={status}>
+                                        {status}
+                                    </DropdownMenuRadioItem>
+                                ))}
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+
+                    <DropdownMenuSub>
+                        <DropdownMenuSubTrigger>Assign To</DropdownMenuSubTrigger>
+                        <DropdownMenuSubContent>
+                            <DropdownMenuRadioGroup value={lead.assigned_to || ''} onValueChange={handleAssign}>
+                                {AGENTS.map((agent) => (
+                                    <DropdownMenuRadioItem key={agent} value={agent}>
+                                        {agent}
+                                    </DropdownMenuRadioItem>
+                                ))}
+                            </DropdownMenuRadioGroup>
+                        </DropdownMenuSubContent>
+                    </DropdownMenuSub>
+                </DropdownMenuContent>
+            </DropdownMenu>
+
+            <EditLeadDialog
+                lead={lead}
+                open={isEditOpen}
+                onOpenChange={setIsEditOpen}
+            />
+        </>
     );
 }

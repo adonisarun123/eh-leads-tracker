@@ -65,7 +65,60 @@ export default function SettingsPage() {
                         </div>
                     </CardContent>
                 </Card>
+
+                <UserManagementCard />
             </div>
         </div>
+    );
+}
+
+import { Button } from "@/components/ui/button";
+import { createUser } from "@/app/actions/auth";
+import { toast } from "sonner";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+
+function UserManagementCard() {
+    const [isPending, setIsPending] = useState(false);
+
+    async function handleSubmit(formData: FormData) {
+        setIsPending(true);
+        const result = await createUser(formData);
+        setIsPending(false);
+
+        if (result.error) {
+            toast.error(result.error);
+        } else {
+            toast.success('User created successfully!');
+            // Reset form
+            (document.getElementById('create-user-form') as HTMLFormElement)?.reset();
+        }
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>
+                    Create new agents or administrators who can login to the dashboard.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <form id="create-user-form" action={handleSubmit} className="space-y-4 max-w-md">
+                    <div className="grid gap-2">
+                        <Label htmlFor="email">Email</Label>
+                        <Input id="email" name="email" type="email" placeholder="agent@example.com" required />
+                    </div>
+                    <div className="grid gap-2">
+                        <Label htmlFor="password">Password</Label>
+                        <Input id="password" name="password" type="password" minLength={6} required />
+                    </div>
+                    <Button type="submit" disabled={isPending}>
+                        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        Create User
+                    </Button>
+                </form>
+            </CardContent>
+        </Card>
     );
 }
