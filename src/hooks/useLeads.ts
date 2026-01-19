@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { Lead, LeadFilterParams } from '@/types';
 import { useEffect } from 'react';
 import { toast } from 'sonner';
@@ -8,6 +8,7 @@ export function useLeads(filters: LeadFilterParams, page: number = 0, pageSize: 
     return useQuery({
         queryKey: ['leads', filters, page],
         queryFn: async () => {
+            const supabase = createClient();
             let query = supabase
                 .from('leads')
                 .select('*', { count: 'exact' });
@@ -79,6 +80,7 @@ export function useLead(id: string) {
     return useQuery({
         queryKey: ['lead', id],
         queryFn: async () => {
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from('leads')
                 .select('*')
@@ -97,6 +99,7 @@ export function useUpdateLead() {
 
     return useMutation({
         mutationFn: async ({ id, updates }: { id: string; updates: Partial<Lead> }) => {
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from('leads')
                 .update(updates)
@@ -119,6 +122,7 @@ export function useCreateLead() {
 
     return useMutation({
         mutationFn: async (lead: Omit<Lead, 'id' | 'created_at' | 'updated_at'>) => {
+            const supabase = createClient();
             const { data, error } = await supabase
                 .from('leads')
                 .insert(lead)
@@ -145,6 +149,7 @@ export function useLeadsSubscription() {
             }
         }
 
+        const supabase = createClient();
         const channel = supabase
             .channel('leads-changes')
             .on(

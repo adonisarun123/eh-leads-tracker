@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/utils/supabase/client';
 import { Lead } from '@/types';
 import { startOfDay, subDays, format, differenceInHours } from 'date-fns';
 
@@ -19,6 +19,7 @@ export function useAnalytics() {
         queryFn: async (): Promise<AnalyticsData> => {
             // Fetch data for last 30 days
             const thirtyDaysAgo = subDays(startOfDay(new Date()), 30).toISOString();
+            const supabase = createClient();
 
             const { data: leads, error } = await supabase
                 .from('leads')
