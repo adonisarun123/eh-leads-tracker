@@ -30,7 +30,7 @@ export default function AnalyticsPage() {
         <div className="container py-6 space-y-6">
             <div>
                 <h1 className="text-3xl font-bold tracking-tight">Analytics</h1>
-                <p className="text-muted-foreground">Insights and performance metrics for the last 30 days.</p>
+                <p className="text-muted-foreground">Insights and performance metrics for all historical data.</p>
             </div>
 
             <Insights insights={data.insights} />

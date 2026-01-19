@@ -17,14 +17,12 @@ export function useAnalytics() {
     return useQuery({
         queryKey: ['analytics'],
         queryFn: async (): Promise<AnalyticsData> => {
-            // Fetch data for last 30 days
-            const thirtyDaysAgo = subDays(startOfDay(new Date()), 30).toISOString();
+            // Fetch all leads for historical analysis
             const supabase = createClient();
 
             const { data: leads, error } = await supabase
                 .from('leads')
-                .select('*')
-                .gte('created_at', thirtyDaysAgo);
+                .select('*');
 
             if (error) throw error;
             if (!leads) return emptyAnalytics();
@@ -56,10 +54,24 @@ function aggregateData(leads: Lead[]): AnalyticsData {
     let convertedCount = 0;
     let totalQualified = 0;
 
-    // Initialize last 30 days for volume
-    for (let i = 0; i < 30; i++) {
-        const d = subDays(new Date(), i);
-        volumeMap.set(format(d, 'yyyy-MM-dd'), 0);
+    // Initialize date range based on actual data
+    if (leads.length > 0) {
+        // Find earliest date
+        const dates = leads.map(l => new Date(l.created_at).getTime());
+        const minDate = new Date(Math.min(...dates));
+        const maxDate = new Date(); // Today
+
+        let currentDate = startOfDay(minDate);
+        while (currentDate <= maxDate) {
+            volumeMap.set(format(currentDate, 'yyyy-MM-dd'), 0);
+            currentDate = new Date(currentDate.setDate(currentDate.getDate() + 1));
+        }
+    } else {
+        // Default to last 30 days if no data
+        for (let i = 0; i < 30; i++) {
+            const d = subDays(new Date(), i);
+            volumeMap.set(format(d, 'yyyy-MM-dd'), 0);
+        }
     }
 
     leads.forEach(lead => {

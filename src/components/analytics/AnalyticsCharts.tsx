@@ -23,7 +23,7 @@ export function AnalyticsCharts({ data }: { data: AnalyticsData }) {
         <div className="grid gap-4 md:grid-cols-2">
             <Card className="col-span-2">
                 <CardHeader>
-                    <CardTitle>Lead Volume (Last 30 Days)</CardTitle>
+                    <CardTitle>Lead Volume (Historical)</CardTitle>
                 </CardHeader>
                 <CardContent className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
