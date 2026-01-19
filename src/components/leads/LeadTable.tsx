@@ -38,6 +38,8 @@ export function LeadTable({ leads }: LeadTableProps) {
                         <TableHead className="hidden md:table-cell">Score</TableHead>
                         <TableHead className="hidden md:table-cell">Priority</TableHead>
                         <TableHead className="hidden lg:table-cell">Assigned To</TableHead>
+                        <TableHead className="hidden xl:table-cell">Budget</TableHead>
+                        <TableHead className="hidden xl:table-cell">Start Date</TableHead>
                         <TableHead className="hidden lg:table-cell">Next Follow-up</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -66,9 +68,13 @@ export function LeadTable({ leads }: LeadTableProps) {
                                 </span>
                             </TableCell>
                             <TableCell className="hidden md:table-cell">
-                                <PriorityBadge priority={lead.priority} />
+                                <PriorityBadge priority={lead.priority || 'Medium'} />
                             </TableCell>
                             <TableCell className="hidden lg:table-cell">{lead.assigned_to || 'Unassigned'}</TableCell>
+                            <TableCell className="hidden xl:table-cell text-sm">{lead.budget || '-'}</TableCell>
+                            <TableCell className="hidden xl:table-cell text-sm">
+                                {lead.startDate ? formatDistanceToNow(parseISO(lead.startDate), { addSuffix: true }) : '-'}
+                            </TableCell>
                             <TableCell className="hidden lg:table-cell">
                                 {lead.next_followup_at ? formatDistanceToNow(parseISO(lead.next_followup_at), { addSuffix: true }) : '-'}
                             </TableCell>

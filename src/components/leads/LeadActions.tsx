@@ -30,7 +30,7 @@ export function LeadActions({ lead }: LeadActionsProps) {
 
     const handleStatusChange = (status: string) => {
         updateLead(
-            { id: lead.id, updates: { status: status as LeadStatus } },
+            { id: lead.id, updates: { status: status as LeadStatus }, source_table: lead.source_table },
             {
                 onSuccess: () => toast.success(`Status updated to ${status}`),
                 onError: () => toast.error('Failed to update status'),
@@ -40,7 +40,11 @@ export function LeadActions({ lead }: LeadActionsProps) {
 
     const handleMarkContacted = () => {
         updateLead(
-            { id: lead.id, updates: { last_contacted_at: new Date().toISOString(), status: 'Contacted' } },
+            {
+                id: lead.id,
+                updates: { last_contacted_at: new Date().toISOString(), status: 'Contacted' },
+                source_table: lead.source_table
+            },
             {
                 onSuccess: () => toast.success('Marked as contacted'),
                 onError: () => toast.error('Failed to update'),

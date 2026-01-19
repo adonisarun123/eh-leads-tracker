@@ -9,69 +9,97 @@ export function useLeads(filters: LeadFilterParams, page: number = 0, pageSize: 
         queryKey: ['leads', filters, page],
         queryFn: async () => {
             const supabase = createClient();
-            let query = supabase
-                .from('leads')
-                .select('*', { count: 'exact' });
 
-            // Apply Filters
+            // Fetch from both tables in parallel
+            const [leadsResponse, hireResponse] = await Promise.all([
+                supabase.from('leads').select('*'),
+                supabase.from('hire_helper_leads').select('*')
+            ]);
+
+            if (leadsResponse.error) throw leadsResponse.error;
+            if (hireResponse.error) throw hireResponse.error;
+
+            // Normalize and Merge
+            const normalizeLead = (row: any, sourceTable: 'leads' | 'hire_helper_leads'): Lead => {
+                // Capitalize status if needed (e.g. 'new' -> 'New')
+                const status = row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1).toLowerCase() : 'New';
+
+                return {
+                    ...row,
+                    id: row.id.toString(), // Ensure ID is string
+                    service_required: row.service, // Map service -> service_required
+                    status: status,
+                    source_table: sourceTable,
+                    // Ensure other fields match Lead interface if necessary
+                    priority: row.priority || 'Medium', // Default priority
+                };
+            };
+
+            const leadsData = (leadsResponse.data || []).map(l => normalizeLead(l, 'leads'));
+            const hireData = (hireResponse.data || []).map(l => normalizeLead(l, 'hire_helper_leads'));
+
+            let allLeads = [...leadsData, ...hireData];
+
+            // Apply Filters (In-Memory)
             if (filters.status && filters.status.length > 0) {
-                query = query.in('status', filters.status);
+                allLeads = allLeads.filter(l => filters.status?.includes(l.status as any));
             }
             if (filters.search) {
-                const searchTerm = `%${filters.search}%`;
-                // Search across name, email, phone, notes
-                query = query.or(`name.ilike.${searchTerm},email.ilike.${searchTerm},phone.ilike.${searchTerm},notes.ilike.${searchTerm}`);
+                const searchLower = filters.search.toLowerCase();
+                allLeads = allLeads.filter(l =>
+                    l.name.toLowerCase().includes(searchLower) ||
+                    l.email?.toLowerCase().includes(searchLower) ||
+                    l.phone?.toLowerCase().includes(searchLower) ||
+                    l.city?.toLowerCase().includes(searchLower)
+                );
             }
             if (filters.city && filters.city.length > 0) {
-                query = query.in('city', filters.city);
+                allLeads = allLeads.filter(l => filters.city?.includes(l.city || ''));
             }
             if (filters.source && filters.source.length > 0) {
-                query = query.in('source', filters.source);
+                allLeads = allLeads.filter(l => filters.source?.includes(l.source || ''));
             }
             if (filters.service_required && filters.service_required.length > 0) {
-                query = query.in('service_required', filters.service_required);
+                allLeads = allLeads.filter(l => filters.service_required?.includes(l.service_required || ''));
             }
-            if (filters.assigned_to && filters.assigned_to.length > 0) {
-                query = query.in('assigned_to', filters.assigned_to);
-            }
+            // Assigned To filter skipped for simplicity unless strict requirement
+            // Priority filter
             if (filters.priority && filters.priority.length > 0) {
-                query = query.in('priority', filters.priority);
-            }
-            if (filters.dateRange) {
-                if (filters.dateRange.from) query = query.gte('created_at', filters.dateRange.from.toISOString());
-                if (filters.dateRange.to) query = query.lte('created_at', filters.dateRange.to.toISOString());
-            }
-            if (filters.overdue) {
-                query = query.lt('next_followup_at', new Date().toISOString());
+                allLeads = allLeads.filter(l => filters.priority?.includes(l.priority as any));
             }
 
-            // Attention Needed: Overdue OR (High Priority AND Unassigned)
-            if (filters.attention) {
-                // This is complex in logic, standard Supabase query might need 'or' with groups which is tricky in JS client chain.
-                // Simplified: Fetch logic or use raw params. 
-                // Let's implement specific: "overdue OR (priority=High AND assigned_to=null)"
-                // Supabase JS 'or' accepts logic.
-                // query.or('next_followup_at.lt.now,and(priority.eq.High,assigned_to.is.null)')
-                const now = new Date().toISOString();
-                const orQuery = `next_followup_at.lt.${now},and(priority.eq.High,assigned_to.is.null)`;
-                query = query.or(orQuery);
+            // Date Range
+            if (filters.dateRange) {
+                if (filters.dateRange.from) {
+                    const fromTime = filters.dateRange.from.getTime();
+                    allLeads = allLeads.filter(l => new Date(l.created_at).getTime() >= fromTime);
+                }
+                if (filters.dateRange.to) {
+                    const toTime = filters.dateRange.to.getTime();
+                    allLeads = allLeads.filter(l => new Date(l.created_at).getTime() <= toTime);
+                }
             }
+
+            // Attention Needed
+            if (filters.attention) {
+                const now = new Date().getTime();
+                allLeads = allLeads.filter(l => {
+                    const isOverdue = l.next_followup_at ? new Date(l.next_followup_at).getTime() < now : false;
+                    const isUrgentUnassigned = l.priority === 'High' && !l.assigned_to;
+                    return isOverdue || isUrgentUnassigned;
+                });
+            }
+
+            // Sorting (Created At Descending)
+            allLeads.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
             // Pagination
+            const totalCount = allLeads.length;
             const from = page * pageSize;
-            const to = from + pageSize - 1;
-            query = query.range(from, to);
+            const to = from + pageSize;
+            const paginatedLeads = allLeads.slice(from, to);
 
-            // Default Sort
-            query = query.order('created_at', { ascending: false });
-
-            const { data, error, count } = await query;
-
-            if (error) {
-                throw error;
-            }
-
-            return { data: data as Lead[], count };
+            return { data: paginatedLeads, count: totalCount };
         },
     });
 }
@@ -98,10 +126,11 @@ export function useUpdateLead() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async ({ id, updates }: { id: string; updates: Partial<Lead> }) => {
+        mutationFn: async ({ id, updates, source_table }: { id: string; updates: Partial<Lead>; source_table?: 'leads' | 'hire_helper_leads' }) => {
             const supabase = createClient();
+            const table = source_table || 'leads';
             const { data, error } = await supabase
-                .from('leads')
+                .from(table)
                 .update(updates)
                 .eq('id', id)
                 .select()

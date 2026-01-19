@@ -17,17 +17,36 @@ export function useAnalytics() {
     return useQuery({
         queryKey: ['analytics'],
         queryFn: async (): Promise<AnalyticsData> => {
-            // Fetch all leads for historical analysis
             const supabase = createClient();
 
-            const { data: leads, error } = await supabase
-                .from('leads')
-                .select('*');
+            const [leadsResponse, hireResponse] = await Promise.all([
+                supabase.from('leads').select('*'),
+                supabase.from('hire_helper_leads').select('*')
+            ]);
 
-            if (error) throw error;
-            if (!leads) return emptyAnalytics();
+            if (leadsResponse.error) throw leadsResponse.error;
+            if (hireResponse.error) throw hireResponse.error;
 
-            return aggregateData(leads as Lead[]);
+            const normalizeLead = (row: any, sourceTable: 'leads' | 'hire_helper_leads'): Lead => {
+                const status = row.status ? row.status.charAt(0).toUpperCase() + row.status.slice(1).toLowerCase() : 'New';
+                return {
+                    ...row,
+                    id: row.id.toString(),
+                    service_required: row.service,
+                    status: status,
+                    source_table: sourceTable,
+                    priority: row.priority || 'Medium',
+                };
+            };
+
+            const leadsData = (leadsResponse.data || []).map(l => normalizeLead(l, 'leads'));
+            const hireData = (hireResponse.data || []).map(l => normalizeLead(l, 'hire_helper_leads'));
+
+            const allLeads = [...leadsData, ...hireData];
+
+            if (allLeads.length === 0) return emptyAnalytics();
+
+            return aggregateData(allLeads);
         },
     });
 }
