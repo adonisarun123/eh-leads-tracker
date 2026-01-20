@@ -22,9 +22,12 @@ const SERVICE_OPTIONS = ['Maid', 'Cook', 'Nanny', 'Elder care'];
 interface LeadFiltersProps {
     filters: LeadFilterParams;
     onFilterChange: (filters: LeadFilterParams) => void;
+    cities?: string[];
+    sources?: string[];
+    services?: string[];
 }
 
-export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
+export function LeadFilters({ filters, onFilterChange, cities = [], sources = [], services = [] }: LeadFiltersProps) {
     const [search, setSearch] = useState(filters.search || '');
 
     const handleSearch = () => {
@@ -61,10 +64,9 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Cities</SelectItem>
-                            {/* Demo cities */}
-                            <SelectItem value="Bangalore">Bangalore</SelectItem>
-                            <SelectItem value="Mumbai">Mumbai</SelectItem>
-                            <SelectItem value="Delhi">Delhi</SelectItem>
+                            {cities.map((city) => (
+                                <SelectItem key={city} value={city}>{city}</SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -77,7 +79,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Sources</SelectItem>
-                            {SOURCE_OPTIONS.map(opt => (
+                            {(sources.length > 0 ? sources : SOURCE_OPTIONS).map(opt => (
                                 <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                             ))}
                         </SelectContent>
@@ -92,7 +94,7 @@ export function LeadFilters({ filters, onFilterChange }: LeadFiltersProps) {
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="all">All Services</SelectItem>
-                            {SERVICE_OPTIONS.map(opt => (
+                            {(services.length > 0 ? services : SERVICE_OPTIONS).map(opt => (
                                 <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                             ))}
                         </SelectContent>

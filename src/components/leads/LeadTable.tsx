@@ -47,7 +47,7 @@ export function LeadTable({ leads }: LeadTableProps) {
                         <TableHead>Status</TableHead>
                         <TableHead>Source</TableHead>
                         <TableHead>Service</TableHead>
-                        <TableHead className="hidden md:table-cell">City</TableHead>
+                        <TableHead className="hidden sm:table-cell">City</TableHead>
                         <TableHead className="hidden md:table-cell">Score</TableHead>
                         <TableHead className="hidden md:table-cell">Priority</TableHead>
                         <TableHead className="hidden lg:table-cell">Assigned To</TableHead>
@@ -74,7 +74,7 @@ export function LeadTable({ leads }: LeadTableProps) {
                             </TableCell>
                             <TableCell className="text-sm">{lead.source}</TableCell>
                             <TableCell className="text-sm">{lead.service_required}</TableCell>
-                            <TableCell className="hidden md:table-cell">{lead.city}</TableCell>
+                            <TableCell className="hidden sm:table-cell">{lead.city}</TableCell>
                             <TableCell className="hidden md:table-cell">
                                 <span className={getScoreColor(calculateLeadScore(lead))}>
                                     {calculateLeadScore(lead)}

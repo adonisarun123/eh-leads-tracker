@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useLeads, useLeadsSubscription } from '@/hooks/useLeads';
 import { useLeadStats } from '@/hooks/useLeadStats';
+import { useFilterOptions } from '@/hooks/useFilterOptions';
 import { KPIStrip } from '@/components/leads/KPIStrip';
 import { LeadFilters } from '@/components/leads/LeadFilters';
 import { LeadTable } from '@/components/leads/LeadTable';
@@ -28,6 +29,9 @@ export default function LeadsPage() {
 
     // Calculate real stats from actual lead data
     const stats = useLeadStats(data?.data, data?.count || 0);
+
+    // Extract unique filter options from all leads data
+    const filterOptions = useFilterOptions(data?.data);
 
     const handleTabChange = (val: string) => {
         setActiveTab(val);
@@ -62,7 +66,13 @@ export default function LeadsPage() {
                 </div>
 
                 <div className="mt-4">
-                    <LeadFilters filters={filters} onFilterChange={setFilters} />
+                    <LeadFilters
+                        filters={filters}
+                        onFilterChange={setFilters}
+                        cities={filterOptions.cities}
+                        sources={filterOptions.sources}
+                        services={filterOptions.services}
+                    />
                 </div>
 
                 <TabsContent value={activeTab} className="mt-0">
