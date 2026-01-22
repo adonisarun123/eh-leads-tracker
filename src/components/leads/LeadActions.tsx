@@ -15,11 +15,12 @@ import {
     DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Eye, Pencil, Phone, CalendarClock, UserPlus } from 'lucide-react';
+import { MoreHorizontal, Eye, Pencil, Phone, CalendarClock, UserPlus, MessageSquare } from 'lucide-react';
 import { Lead, LeadStatus } from '@/types';
 import { useUpdateLead } from '@/hooks/useLeads';
 import { toast } from 'sonner';
 import { EditLeadDialog } from './EditLeadDialog';
+import { CommentsDialog } from './CommentsDialog';
 
 interface LeadActionsProps {
     lead: Lead;
@@ -31,6 +32,7 @@ const AGENTS = ['Laxmi', 'Ashma', 'Anjum', 'Nisha', 'Shubhangi', 'Riya'];
 export function LeadActions({ lead }: LeadActionsProps) {
     const { mutate: updateLead } = useUpdateLead();
     const [isEditOpen, setIsEditOpen] = useState(false);
+    const [isCommentsOpen, setIsCommentsOpen] = useState(false);
 
     const handleStatusChange = (status: string) => {
         updateLead(
@@ -99,6 +101,10 @@ export function LeadActions({ lead }: LeadActionsProps) {
                     <DropdownMenuItem onClick={() => setIsEditOpen(true)}>
                         <CalendarClock className="mr-2 h-4 w-4" /> Schedule Follow-up
                     </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsCommentsOpen(true)}>
+                    <MessageSquare className="mr-2 h-4 w-4" /> Comments & Notes
+                </DropdownMenuItem>
+
 
                     <DropdownMenuSeparator />
 
@@ -134,6 +140,12 @@ export function LeadActions({ lead }: LeadActionsProps) {
                 lead={lead}
                 open={isEditOpen}
                 onOpenChange={setIsEditOpen}
+            />
+
+            <CommentsDialog
+                lead={lead}
+                open={isCommentsOpen}
+                onOpenChange={setIsCommentsOpen}
             />
         </>
     );

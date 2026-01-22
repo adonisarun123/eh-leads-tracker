@@ -44,6 +44,8 @@ export function LeadTable({ leads }: LeadTableProps) {
                     <TableRow>
                         <TableHead>Created</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead className="hidden md:table-cell">Phone</TableHead>
+                        <TableHead className="hidden lg:table-cell">Email</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead>Source</TableHead>
                         <TableHead>Service</TableHead>
@@ -68,6 +70,12 @@ export function LeadTable({ leads }: LeadTableProps) {
                                     <span className="font-semibold">{lead.name}</span>
                                     <span className="text-xs text-muted-foreground md:hidden">{lead.phone}</span>
                                 </div>
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-sm">
+                                {lead.phone || '-'}
+                            </TableCell>
+                            <TableCell className="hidden lg:table-cell text-sm">
+                                {lead.email || '-'}
                             </TableCell>
                             <TableCell>
                                 <StatusBadge status={lead.status} />
